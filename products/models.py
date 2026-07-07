@@ -11,14 +11,17 @@ class CategoryModels(models.Model):
         return self.title
 
     class Meta:
-        verbose_name = 'Category'
-        verbose_name_plural = 'Category'
+        verbose_name = "Category"
+        verbose_name_plural = "Category"
+
 
 class ProductModel(models.Model):
     title = models.CharField(max_length=50)
     price = models.IntegerField(default=0)
-    category = models.ForeignKey(CategoryModels, on_delete=models.CASCADE, null=True, blank=True)
-    image = models.FileField(upload_to='products')
+    category = models.ForeignKey(
+        CategoryModels, on_delete=models.CASCADE, null=True, blank=True
+    )
+    image = models.FileField(upload_to="products")
     descriptions = models.TextField(blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
@@ -26,8 +29,8 @@ class ProductModel(models.Model):
         return self.title
 
     class Meta:
-        verbose_name = 'product'
-        verbose_name_plural = 'products'
+        verbose_name = "product"
+        verbose_name_plural = "products"
 
 
 class FormModel(models.Model):
@@ -39,5 +42,5 @@ class FormModel(models.Model):
         return str(self.pk)
 
     class Meta:
-        verbose_name = 'Form'
-        verbose_name_plural = 'Forms'
+        verbose_name = "Form"
+        verbose_name_plural = "Forms"

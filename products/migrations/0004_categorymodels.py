@@ -6,20 +6,28 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('products', '0003_formmodel_alter_productmodel_descriptions'),
+        ("products", "0003_formmodel_alter_productmodel_descriptions"),
     ]
 
     operations = [
         migrations.CreateModel(
-            name='CategoryModels',
+            name="CategoryModels",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('title', models.CharField(max_length=50)),
-                ('crate_at', models.DateTimeField(auto_now_add=True)),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("title", models.CharField(max_length=50)),
+                ("crate_at", models.DateTimeField(auto_now_add=True)),
             ],
             options={
-                'verbose_name': 'Category',
-                'verbose_name_plural': 'Category',
+                "verbose_name": "Category",
+                "verbose_name_plural": "Category",
             },
         ),
     ]

@@ -6,4 +6,4 @@ from products.models import FormModel
 class FormModelForm(forms.ModelForm):
     class Meta:
         model = FormModel
-        fields = ['username', 'age', 'comment']
+        fields = ["username", "age", "comment"]
