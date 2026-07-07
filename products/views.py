@@ -1,74 +1,89 @@
-from django.http import HttpResponse
 from django.shortcuts import render
 from django.views.generic import ListView, TemplateView
-from .models import CategoryModels
 
-
-# models.py, admin.py, views.py, urls.py
-
-# def home_page(request):
-#     return HttpResponse("<h1>Hello</h1>")
 from products.forms import FormModelForm
-from products.models import ProductModel
+from products.models import ProductModel, CategoryModels
 
 
-def index_page(request):
-    # products = ProductModel.objects.all().filter(title__icontains="Iphone12")
-    # products = ProductModel.objects.all().order_by('-id')
+class HomePage(TemplateView):
+    template_name = 'index.html'
 
-    return render(request, 'index.html', )
-
-
-# def shop_page(request):
-#     products = ProductModel.objects.all()
-#     return render(request, 'shop.html', {'products': products})
 
 class ShopPageView(ListView):
     template_name = 'shop.html'
-    queryset = ProductModel.objects.all()
+    model = ProductModel
     context_object_name = 'products'
-    paginate_by = 1
+    paginate_by = 6
 
-def get_quaryset(self):
-    qs = ProductModel.objects.all()
-    q = self.request.GET.get('q')
-    category = self.request.GET.get('category')
+    def get_queryset(self):
+        queryset = ProductModel.objects.all()
 
-    if q:
-        qs = qs.filter(title__icontains=q)
-        #title
-        #title__icontais = ищет по буквам
+        q = self.request.GET.get('q')
+        category = self.request.GET.get('category')
 
-    elif category:
-        qs = qs.filter(category_id=category)
+        if q:
+            queryset = queryset.filter(title__icontains=q)
 
-    return q
+        if category:
+            queryset = queryset.filter(category_id=category)
 
+        return queryset
 
-def get_context_data(self, *, object_list=None, **kwargs):
+    def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
+
         context['categories'] = CategoryModels.objects.all()
+        context['q'] = self.request.GET.get('q', '')
+        context['selected_category'] = self.request.GET.get('category', '')
 
         return context
 
-class About_us(TemplateView):
+
+class AboutUsView(TemplateView):
     template_name = 'about.html'
 
 
-# context ={}
-#
-#     # add the dictionary during initialization
-#     form = GeeksForm(request.POST or None)
-#     if form.is_valid():
-#         form.save()
-#     context['form']= form
-#     return render(request, "create_view.html", context)
+class ShopDetails(TemplateView):
+    template_name = 'shop-details.html'
+
+
+class ShoppingCart(TemplateView):
+    template_name = 'shopping-cart.html'
+
+
+class CheckOut(TemplateView):
+    template_name = 'checkout.html'
+
+
+class BlogDetails(TemplateView):
+    template_name = 'blog-details.html'
+
+
+class Blog(TemplateView):
+    template_name = 'blog.html'
+
+
+class Contacts(TemplateView):
+    template_name = 'contact.html'
+
+
 def send_form(request):
-    context = {}
+    success = False
 
-    form = FormModelForm(request.POST)
-    if form.is_valid():
-        form.save()
+    if request.method == 'POST':
+        form = FormModelForm(request.POST)
 
-    context['blabla'] = form
+        if form.is_valid():
+            form.save()
+            success = True
+            form = FormModelForm()
+    else:
+        form = FormModelForm()
+
+    context = {
+        'form': form,
+        'blabla': form,
+        'success': success,
+    }
+
     return render(request, 'forms.html', context)
