@@ -2,9 +2,6 @@ from django.contrib import admin
 
 from products.models import CategoryModels, FormModel, ProductModel
 
-# 1) python manage.py startapp products
-# 2) products поставить в settings.py installed apps
-
 
 @admin.register(CategoryModels)
 class CategoryModelsAdmin(admin.ModelAdmin):
@@ -12,10 +9,45 @@ class CategoryModelsAdmin(admin.ModelAdmin):
 
 
 @admin.register(ProductModel)
-class ProductModelAdmin(admin.ModelAdmin):
-    list_display = ["id", "title", "price", "created_at"]
-    search_fields = ["title", "price"]
-    list_filter = ["created_at"]
+class ProductAdmin(admin.ModelAdmin):
+    list_display = [
+        "id",
+        "title",
+        "category",
+        "price",
+        "discount",
+        "final_price",
+        "color",
+        "stock",
+        "is_available",
+        "created_at",
+    ]
+    list_filter = [
+        "category",
+        "color",
+        "is_available",
+        "created_at",
+    ]
+    search_fields = [
+        "title",
+        "descriptions",
+        "color",
+    ]
+    list_editable = [
+        "price",
+        "discount",
+        "color",
+        "stock",
+        "is_available",
+    ]
+    prepopulated_fields = {
+        "slug": ("title",),
+    }
+    readonly_fields = [
+        "final_price",
+        "created_at",
+        "updated_at",
+    ]
 
 
 @admin.register(FormModel)
