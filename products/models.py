@@ -1,24 +1,56 @@
-from django.db import models
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
 from django.utils.text import slugify
 
-# models.py, admin.py, views.py, urls.py
+
+class SlugMixin(models.Model):
+    slug = models.SlugField(max_length=50, unique=True, blank=True)
+
+    slug_source_field = "title"
+    slug_fallback = "item"
+
+    class Meta:
+        abstract = True
+
+    def save(self, *args, **kwargs):
+        if not self.slug:
+            source_value = getattr(self, self.slug_source_field)
+            base_slug = slugify(source_value) or self.slug_fallback
+        else:
+            base_slug = slugify(self.slug) or self.slug_fallback
+
+        slug = base_slug
+        counter = 1
+
+        while self.__class__.objects.filter(slug=slug).exclude(pk=self.pk).exists():
+            slug = f"{base_slug}-{counter}"
+            counter += 1
+
+        self.slug = slug
+
+        super().save(*args, **kwargs)
 
 
-class CategoryModels(models.Model):
+class CategoryModels(SlugMixin):
+    slug_fallback = "category"
+
     title = models.CharField(max_length=50)
-    crate_at = models.DateTimeField(auto_now_add=True)
+    description = models.TextField(blank=True)
+    is_active = models.BooleanField(default=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        verbose_name = "Category"
+        verbose_name_plural = "Categories"
+        ordering = ["title"]
 
     def __str__(self):
         return self.title
 
-    class Meta:
-        verbose_name = "Category"
-        verbose_name_plural = "Category"
 
-
-class ProductModel(models.Model):
+class ProductModel(SlugMixin):
+    slug_fallback = "product"
 
     category = models.ForeignKey(
         CategoryModels,
@@ -31,7 +63,6 @@ class ProductModel(models.Model):
         without slug - products/15
         with slug - products/black-jacket/
     '''
-    slug = models.SlugField(unique=True)
     descriptions = models.TextField(blank=True, null=True)
     price = models.DecimalField(max_digits=10, decimal_places=2)
     discount = models.PositiveIntegerField(
@@ -59,7 +90,7 @@ class ProductModel(models.Model):
     @property
     def final_price(self):
         if self.discount > 0:
-            return self.price - (self.price * self.discount // 100)
+            return self.price - (self.price * self.discount / 100)
         return self.price
 
     @property
@@ -69,23 +100,6 @@ class ProductModel(models.Model):
     @property
     def in_stock(self):
         return self.stock > 0
-
-    def save(self, *args, **kwargs):
-        if not self.slug:
-            base_slug = slugify(self.title)
-            slug = base_slug
-            counter = 1
-
-            while ProductModel.objects.filter(slug=slug).exclude(pk=self.pk).exists():
-                slug = f"{base_slug}-{counter}"
-                counter += 1
-
-            self.slug = slug
-
-        if self.stock <= 0:
-            self.is_available = False
-
-        super().save(*args, **kwargs)
 
 
 class FormModel(models.Model):
