@@ -13,7 +13,7 @@ class ShopPageView(ListView):
     template_name = "shop.html"
     model = ProductModel
     context_object_name = "products"
-    paginate_by = 6
+    paginate_by = 15
 
     def get_queryset(self):
         queryset = ProductModel.objects.all()

@@ -1,3 +1,4 @@
+from django.core.exceptions import ValidationError
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
 from django.utils.text import slugify
@@ -31,8 +32,33 @@ class SlugMixin(models.Model):
         super().save(*args, **kwargs)
 
 
+class Brand(SlugMixin):
+    slug_fallback = "brand"
+
+    title = models.CharField(max_length=50, unique=True)
+    slug = models.SlugField(max_length=70, unique=True, blank=True)
+    description = models.TextField(blank=True)
+    is_active = models.BooleanField(default=True)
+
+    class Meta:
+        verbose_name = "Brand"
+        verbose_name_plural = "Brands"
+        ordering = ["title"]
+
+    def __str__(self):
+        return self.title
+
+
 class CategoryModels(SlugMixin):
     slug_fallback = "category"
+
+    parent = models.ForeignKey(
+        "self",
+        on_delete=models.CASCADE,
+        related_name="children",
+        null=True,
+        blank=True,
+    )
 
     title = models.CharField(max_length=50)
     description = models.TextField(blank=True)
@@ -43,10 +69,13 @@ class CategoryModels(SlugMixin):
     class Meta:
         verbose_name = "Category"
         verbose_name_plural = "Categories"
-        ordering = ["title"]
 
     def __str__(self):
         return self.title
+
+    def clean(self):
+        if self.parent == self:
+            raise ValidationError("Category cannot be parent of itself.")
 
 
 class ProductModel(SlugMixin):
@@ -56,6 +85,14 @@ class ProductModel(SlugMixin):
         CategoryModels,
         on_delete=models.CASCADE,
         related_name="products",
+    )
+
+    brand = models.ForeignKey(
+        Brand,
+        on_delete=models.SET_NULL,
+        related_name="products",
+        null=True,
+        blank=True,
     )
 
     title = models.CharField(max_length=50)
@@ -78,6 +115,12 @@ class ProductModel(SlugMixin):
     is_available = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+    '''Main page params'''
+    is_featured = models.BooleanField(default=False)
+    is_best_seller = models.BooleanField(default=False)
+    is_new_arrival = models.BooleanField(default=False)
+    is_hot_sale = models.BooleanField(default=False)
+    homepage_order = models.PositiveIntegerField(default=0)
 
     class Meta:
         verbose_name = "Product"
