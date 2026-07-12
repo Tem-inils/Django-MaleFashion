@@ -1,5 +1,5 @@
 from django.shortcuts import render
-from django.views.generic import ListView, TemplateView
+from django.views.generic import ListView, TemplateView, DetailView
 
 from products.forms import FormModelForm
 from products.models import CategoryModels, ProductModel
@@ -7,6 +7,36 @@ from products.models import CategoryModels, ProductModel
 
 class HomePage(TemplateView):
     template_name = "index.html"
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+
+        products = ProductModel.objects.filter(
+            is_available=True
+        ).select_related("category", "brand")
+
+        context["featured_products"] = products.filter(
+            is_featured=True
+        ).order_by("homepage_order", "-created_at")[:8]
+
+        context["best_sellers"] = products.filter(
+            is_best_seller=True
+        ).order_by("homepage_order", "-created_at")[:8]
+
+        context["new_arrivals"] = products.filter(
+            is_new_arrival=True
+        ).order_by("homepage_order", "-created_at")[:8]
+
+        context["hot_sales"] = products.filter(
+            is_hot_sale=True
+        ).order_by("homepage_order", "-created_at")[:8]
+
+        context["main_categories"] = CategoryModels.objects.filter(
+            is_active=True,
+            parent__isnull=True,
+        ).prefetch_related("children")
+
+        return context
 
 
 class ShopPageView(ListView):
