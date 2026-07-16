@@ -1,4 +1,5 @@
 from django.shortcuts import render
+from django.db.models import Q
 from django.views.generic import ListView, TemplateView, DetailView
 
 from products.forms import FormModelForm
@@ -30,6 +31,12 @@ class HomePage(TemplateView):
         context["hot_sales"] = products.filter(
             is_hot_sale=True
         ).order_by("homepage_order", "-created_at")[:8]
+
+        context["homepage_products"] = products.filter(
+            Q(is_best_seller=True) |
+            Q(is_new_arrival=True) |
+            Q(is_hot_sale=True)
+        ).distinct().order_by("homepage_order", "-created_at")[:8]
 
         context["main_categories"] = CategoryModels.objects.filter(
             is_active=True,
